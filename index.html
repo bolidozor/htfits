@@ -1,0 +1,85 @@
+<html>
+<head>
+<script src="fits.js"></script>
+</head>
+<body onload="onload();">
+<script>
+var blockSize = 2880;
+var lineWidth = 80;
+var requestSize = blockSize * 4;
+
+function findDataUnitHeader(string) {
+	var start = 0;
+	for (i = start; i < string.length; i += lineWidth) {
+		if (string.substring(i, i + 4) == "END ") {
+			var end = Math.ceil((i + 1) / blockSize) * blockSize;
+
+			header = new astro.FITS.Header(string.substring(start, end));
+			if (header.hasDataUnit())
+				return header.cards;
+
+			i = start = end;
+		}
+	}
+
+	return {};
+}
+
+function getRanges(header) {
+	/* TODO: CRPIX? */
+	return {
+		"xa": header['CRVAL1'].value,
+		"xb": header['CRVAL1'].value + header['CDELT1'].value * header['ZNAXIS1'].value,
+		"ya": header['CRVAL2'].value,
+		"yb": header['CRVAL2'].value + header['CDELT2'].value * header['ZNAXIS2'].value
+	};
+}
+
+function onload() {
+	url = location.hash.substr(1);
+
+  	document.getElementById('img').src = '/fits.png?' + url;
+
+	var xhr = new XMLHttpRequest;
+	xhr.onreadystatechange = function () {
+		if (xhr.readyState != 4) {
+    		return;
+  		}
+
+  		if (xhr.status == 200 || xhr.status == 206) {
+  			header = findDataUnitHeader(xhr.responseText.substring(0, requestSize));
+  			ranges = getRanges(header);
+
+  			for (x in ranges) {
+  				document.getElementById(x).innerHTML = String(ranges[x]);
+  			}
+  		}
+	};
+	xhr.open('GET', url, true);
+	xhr.setRequestHeader('Range', 'bytes=0-' + String(requestSize));
+	xhr.send(null);
+}
+</script>
+
+<table style='font-family: "Courier New", Courier, monospace;'>
+	<tr>
+		<td>
+			<img id='img'></img>
+		</td>
+
+		<td style='position: relative; width: 300px;'>
+			<div style='position: absolute; top: 5px;'>\ <span id='ya'></span></div>
+			<div style='position: absolute; bottom: 5px;'>/ <span id='yb'></span></div>
+		</td>
+	</tr>
+
+	<tr>
+		<td style='position: relative;'>
+			<div style='position: absolute; left: 5px;'>\ <span id='xa'></span></div>
+			<div style='position: absolute; right: 5px;'><span id='xb'></span> /</div>
+		</td>
+		<td></td>
+	</tr>
+</table>
+</body>
+</html>
