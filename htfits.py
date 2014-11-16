@@ -32,7 +32,7 @@ def fits_to_png(environ, start_response):
             if unit.data is not None:
                 imunit = unit
 
-        matplotlib.image.imsave(sio, imunit.data, format='png')
+        matplotlib.image.imsave(sio, imunit.data[::-1,:], format='png')
     except Exception:
         start_response('500 Internal Server Error', [('Content-type', 'text/plain')])
         return "Error"
