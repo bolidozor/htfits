@@ -4,7 +4,6 @@ import StringIO
 import pyfits
 import numpy as np
 import urllib2
-import static # https://github.com/lukearno/static
 
 try:
     import urllib2.parse as urlparse
@@ -40,17 +39,18 @@ def fits_to_png(environ, start_response):
     start_response('200 OK', [('Content-type', 'image/png')])
     return sio.getvalue()
 
-static = static.Cling('.')
-
-def app(environ, start_response):
-    if environ['PATH_INFO'] == '/fits.png':
-        return fits_to_png(environ, start_response)
-
-    return static(environ, start_response)
-
 def main():
     from wsgiref.util import setup_testing_defaults
     from wsgiref.simple_server import make_server
+    import static # https://github.com/lukearno/static
+
+    static = static.Cling('.')
+
+    def app(environ, start_response):
+        if environ['PATH_INFO'] == '/f.png':
+            return fits_to_png(environ, start_response)
+
+        return static(environ, start_response)
 
     httpd = make_server('', 8000, app)
     print "Serving on port 8000..."
@@ -58,3 +58,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+application = fits_to_png

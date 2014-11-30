@@ -38,22 +38,21 @@ function getRanges(header) {
 function onload() {
 	url = location.hash.substr(1);
 
-  	document.getElementById('img').src = '/fits.png?' + url;
+	document.getElementById('img').src = '/f.png?' + url;
 
 	var xhr = new XMLHttpRequest;
 	xhr.onreadystatechange = function () {
-		if (xhr.readyState != 4) {
-    		return;
-  		}
+		if (xhr.readyState != 4)
+			return;
 
-  		if (xhr.status == 200 || xhr.status == 206) {
-  			header = findDataUnitHeader(xhr.responseText.substring(0, requestSize));
-  			ranges = getRanges(header);
+		if (xhr.status == 200 || xhr.status == 206) {
+			header = findDataUnitHeader(xhr.responseText.substring(0, requestSize));
+			ranges = getRanges(header);
 
-  			for (x in ranges) {
-  				document.getElementById(x).innerHTML = String(ranges[x]);
-  			}
-  		}
+			for (x in ranges) {
+				document.getElementById(x).innerHTML = String(ranges[x]);
+			}
+		}
 	};
 	xhr.open('GET', url, true);
 	xhr.setRequestHeader('Range', 'bytes=0-' + String(requestSize));
@@ -64,7 +63,7 @@ function onload() {
 <table style='font-family: "Courier New", Courier, monospace;'>
 	<tr>
 		<td>
-			<img id='img'></img>
+			<img id='img'>
 		</td>
 
 		<td style='position: relative; width: 300px;'>
