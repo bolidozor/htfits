@@ -4,6 +4,7 @@ import StringIO
 import pyfits
 import numpy as np
 import urllib2
+#import urllib.request as urllib2
 
 try:
     import urllib2.parse as urlparse
@@ -31,7 +32,7 @@ def fits_to_png(environ, start_response):
             if unit.data is not None:
                 imunit = unit
 
-        matplotlib.image.imsave(sio, imunit.data[::-1,:], format='png')
+        matplotlib.image.imsave(sio, imunit.data[::-1,:], format='png', cmap='gnuplot')
     except Exception:
         start_response('500 Internal Server Error', [('Content-type', 'text/plain')])
         return "Error"
@@ -51,12 +52,14 @@ def main():
             return fits_to_png(environ, start_response)
 
         return static(environ, start_response)
-
-    httpd = make_server('', 8000, app)
-    print "Serving on port 8000..."
+    port = 80
+    httpd = make_server('', port, app)
+    print("Serving on port {}...".format(port))
     httpd.serve_forever()
+    print("End...")
 
 if __name__ == "__main__":
     main()
 
 application = fits_to_png
+
