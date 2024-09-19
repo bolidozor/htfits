@@ -4,6 +4,9 @@
 
 ### Apache
 
+### gunicorn
+    gunicorn -w 3 htfits:application --bind 127.0.0.1:7100
+
 ### Stand-alone Python server 
 
     git clone git@github.com:bolidozor/htfits.git
