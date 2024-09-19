@@ -1,44 +1,56 @@
 import matplotlib
 import matplotlib.image
-import StringIO
-import pyfits
-import numpy as np
-import urllib2
-#import urllib.request as urllib2
 
-try:
-    import urllib2.parse as urlparse
-except ImportError:
-    import urlparse
+import io
+from io import StringIO
+
+from astropy.io import fits
+import astropy.io.fits as pyfits
+import numpy as np
+from urllib.request import urlopen, urlparse
+import matplotlib
+import matplotlib.image
+import io
+import urllib.request as urllib2
+from urllib.parse import urlparse
+from astropy.io import fits
+import numpy as np
+
 
 ALLOWED_SCHEMES = ['http']
 ALLOWED_NETLOCS = ['space.astro.cz']
 
 def fits_to_png(environ, start_response):
     url = environ['QUERY_STRING']
-
-    urlp = urlparse.urlparse(url)
+    print(url)
+    urlp = urlparse(url)
     if not (urlp.netloc in ALLOWED_NETLOCS and urlp.scheme in ALLOWED_SCHEMES):
         start_response('403 Forbidden', [('Content-type', 'text/plain')])
         return "FITS URL is bad"
 
     try:
-        fits = pyfits.open(StringIO.StringIO(urllib2.urlopen(url).read()))
-        sio = StringIO.StringIO()
+
+        fits_file = fits.open(io.BytesIO(urllib2.urlopen(url).read()))
+        sio = io.BytesIO()
 
         imunit = None
 
-        for unit in fits:
+        for unit in fits_file:
             if unit.data is not None:
                 imunit = unit
 
+        print("GEN")
+        
+
         matplotlib.image.imsave(sio, imunit.data[::-1,:], format='png', cmap='gnuplot')
+        sio.seek(0)
+
     except Exception:
         start_response('500 Internal Server Error', [('Content-type', 'text/plain')])
         return "Error"
 
     start_response('200 OK', [('Content-type', 'image/png')])
-    return sio.getvalue()
+    return [sio.getvalue()]
 
 def main():
     from wsgiref.util import setup_testing_defaults
